@@ -27,20 +27,23 @@
 </html>
 <script>
     $(function () {
-        const url = 'http://192.168.7.189:7002/public/doc1676424106176.docx'
+        const url = 'http://192.168.7.189:7002/public/doc1676424106176.docx' || Office.context.document.url
         function log(text) {
             $('#log').prepend(`<li>${text}</li>`)
         }
 
         function getId() {
-            const list = (url || Office.context.document.url).split('/');
+            const list = url.split('/');
             return list[list.length - 1].split('.')[0]
         }
         const id = getId();
         log('获取文档内容中...');
-        axios({ method: 'post', url: 'http://192.168.7.189:7001/get', data: { text: 'test', id } })
-            .then((res) => {
-                if (res.data.code === 200) {
+        $.ajax({
+            dataType: 'jsonp',
+            url: 'http://192.168.7.189:7001/get',
+            data: { text: 'test', id },
+            success(data) {
+                if (data.code === 200) {
                     log('获取文档内容成功');
                     Word.run(async (context) => {
                         /**
@@ -48,7 +51,7 @@
                          */
 
                         // insert a paragraph at the end of the document.
-                        const paragraph = context.document.body.insertParagraph(res.data.data || '');
+                        const paragraph = context.document.body.insertParagraph(data.data || '');
 
                         // change the paragraph color to blue.
                         paragraph.font.color = "blue";
@@ -58,28 +61,31 @@
                 } else {
                     log('获取文档内容失败');
                 }
-                console.log(res, 'res');
-            })
-            .catch(e => {
+            },
+            error() {
                 log('获取文档内容失败');
-            })
+            }
+        })
         $('#save').on('click', function () {
-            if (id === 'empth') {
+            if (id === 'empty') {
                 log('空文档不允许保存')
             } else {
                 log('文档保存中')
-                axios({ method: 'post', url: 'http://192.168.7.189:7001/set', data: { text: 'test', id } })
-                    .then((res) => {
-                        if (res.data.code === 200) {
+                $.ajax({
+                    dataType: 'jsonp', url: 'http://192.168.7.189:7001/set', data: { text: 'test', id },
+                    success(data) {
+                        if (data.code === 200) {
                             log('文档保存成功');
                         } else {
                             log('文档保存失败');
                         }
-                        console.log(res, 'res');
-                    })
-                    .catch(e => {
+                    },
+                    error() {
                         log('文档保存失败');
-                    })
+                    }
+                }
+                )
+
             }
         });
     })
