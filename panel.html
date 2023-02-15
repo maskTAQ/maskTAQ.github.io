@@ -6,10 +6,22 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.3/jquery.js"></script>
 </head>
 
 <body>
-    123
+    <ul>
+        <li>
+            <button id="getFileName">获取文件名</button>
+            <input type="text">
+        </li>
+    </ul>
 </body>
 
 </html>
+<script>
+    $('#getFileName').on('click',function(){
+        $('#fileName').val(12);
+    })
+</script>
