@@ -8,20 +8,79 @@
     <title>Document</title>
     <script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.3/jquery.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/1.3.2/axios.min.js"></script>
 </head>
 
 <body>
+    <div style="border:1px solid red">
+        <p>日志:</p>
+        <ul id="log"></ul>
+    </div>
     <ul>
+
         <li>
-            <button id="getFileName">获取文件名</button>
-            <input type="text">
+            <button id="save">保存文件</button>
         </li>
     </ul>
 </body>
 
 </html>
 <script>
-    $('#getFileName').on('click',function(){
-        $('#fileName').val(12);
+    $(function () {
+        const url = 'http://192.168.7.189:7002/public/doc1676424106176.docx'
+        function log(text) {
+            $('#log').prepend(`<li>${text}</li>`)
+        }
+
+        function getId() {
+            const list = (url || Office.context.document.url).split('/');
+            return list[list.length - 1].split('.')[0]
+        }
+        const id = getId();
+        log('获取文档内容中...');
+        axios({ method: 'post', url: 'http://192.168.7.189:7001/get', data: { text: 'test', id } })
+            .then((res) => {
+                if (res.data.code === 200) {
+                    log('获取文档内容成功');
+                    Word.run(async (context) => {
+                        /**
+                         * Insert your Word code here
+                         */
+
+                        // insert a paragraph at the end of the document.
+                        const paragraph = context.document.body.insertParagraph(res.data.data || '');
+
+                        // change the paragraph color to blue.
+                        paragraph.font.color = "blue";
+
+                        await context.sync();
+                    });
+                } else {
+                    log('获取文档内容失败');
+                }
+                console.log(res, 'res');
+            })
+            .catch(e => {
+                log('获取文档内容失败');
+            })
+        $('#save').on('click', function () {
+            if (id === 'empth') {
+                log('空文档不允许保存')
+            } else {
+                log('文档保存中')
+                axios({ method: 'post', url: 'http://192.168.7.189:7001/set', data: { text: 'test', id } })
+                    .then((res) => {
+                        if (res.data.code === 200) {
+                            log('文档保存成功');
+                        } else {
+                            log('文档保存失败');
+                        }
+                        console.log(res, 'res');
+                    })
+                    .catch(e => {
+                        log('文档保存失败');
+                    })
+            }
+        });
     })
 </script>
